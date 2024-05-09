@@ -87,13 +87,13 @@ def prediction(path):
 # Create a new dataset
 def store_record(file, prediction_result):
     emotion_folders = {
-        'happy': 'Happy',
-        'sad': 'Sad',
-        'angry': 'Angry',
-        'neutral': 'Neutral',
-        'surprised': 'Surprised',
-        'disgusted': 'Disgusted',
-        'fearful': 'Fearful'
+        'happy':'Happy',
+        'sad':'Sad',
+        'angry':'Angry',
+        'neutral':'Neutral',
+        'surprised':'Surprised',
+        'disgusted':'Disgusted',
+        'fearful':'Fearful'
     }
 
     # Check if the prediction_result matches any emotion
