@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Conv1D, BatchNormalization, MaxPooling1D, Dr
 
 import tensorflow.keras.layers as L
 from sklearn.preprocessing import LabelEncoder
-# from app.models import Emotions, Records
+from app.Routes.Records import PredictedRecordSave
 import numpy as np
 import tensorflow as tf
 import librosa
@@ -26,7 +26,7 @@ custom_objects = {
     'Dense': Dense
 }
 # Create a Blueprint for deployment
-deploy_bp = Blueprint('Deploy', __name__, url_prefix='/model')
+deploy_bp = Blueprint('Deploy', __name__, url_prefix='/Deploy')
 
 
 json_file = open(r'SpeechEmotion\app\kaggle\CNN_model.json', 'r')
@@ -39,10 +39,10 @@ loaded_model.load_weights(r"SpeechEmotion\app\kaggle\best_model1_weights.h5")
 
 
 # Load the scaler and encoder
-with open(r'SpeechEmotion\app\Routes\scaler2.pickle', 'rb') as f:
+with open(r'SpeechEmotion\app\kaggle\scaler2.pickle', 'rb') as f:
     scaler2 = pickle.load(f)
 
-with open(r'SpeechEmotion\app\Routes\encoder2.pickle', 'rb') as f:
+with open(r'SpeechEmotion\app\kaggle\encoder2.pickle', 'rb') as f:
     encoder2 = pickle.load(f)
 
 # Define feature extraction functions
@@ -84,71 +84,65 @@ def prediction(path):
     y_pred = encoder2.inverse_transform(predictions)
     return y_pred[0][0]
 
-# Create a new dataset
-def store_record(file, prediction_result):
-    emotion_folders = {
-        'happy':'Happy',
-        'sad':'Sad',
-        'angry':'Angry',
-        'neutral':'Neutral',
-        'surprised':'Surprised',
-        'disgusted':'Disgusted',
-        'fearful':'Fearful'
-    }
 
-    # Check if the prediction_result matches any emotion
-    if prediction_result.lower() in emotion_folders:
-
-        # Get the folder name for the emotion
-        folder_name = emotion_folders[prediction_result.lower()]
-        
-        # Path to the folder where the record will be stored
-        folder_path = os.path.join('Dataset', folder_name)
-
-        # Create the folder if it doesn't exist
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-
-        # Generate a unique filename for the record
-        record_filename = str(uuid.uuid4()) + '.wav'
-
-        # Save the file in the folder with the unique filename
-        file.save(os.path.join(folder_path, record_filename))
-
-
-
-
-# Prediction endpoint
-@deploy_bp.route('/predict-emotion',methods=['POST'])
-def predict():
+# Prediction endpoint for employee
+@deploy_bp.route('/predict-emotion/<int:user_id>',methods=['POST'])
+def predict(user_id):
+    print("Predict endpoint accessed") 
     file = request.files['file']
     
     if not file:
         return jsonify({'error': 'Empty file'})
 
-    #file.save('temp.wav')
     prediction_result = prediction(file)
+    #print("00000000000000000000000",file)
+    new_record =PredictedRecordSave(file, prediction_result,user_id)
 
-    store_record(file, prediction_result)
+    return jsonify({
+        'message': 'File and prediction result saved successfully.',
+        'record_id': new_record.recordID,
+        'file_path': new_record.record_path,
+        'emotion': new_record.emotion.emotion,
+        'userID':user_id
+    })
 
-    return jsonify({'emotion':prediction_result})
 
 
-@deploy_bp.route('/predict-emotion-real-time', methods=['POST'])
-def predict_live():
-    audio_data = request.stream.read()  # Read audio data from the request stream
+# save record form Client without the prediction result by using the user ID
+def storeRecordClient(file, user_id):
+    try:
+        # Path to the folder where the user's records will be stored
+        user_folder_path = os.path.join('UsersRecords', str(user_id))
 
-    if not audio_data:
-        return jsonify({'error': 'Empty audio data'})
+        # Create the user's folder if it doesn't exist
+        if not os.path.exists(user_folder_path):
+            os.makedirs(user_folder_path)
+            print("User folder created")
 
-    # Create a temporary file to store the audio data
-    with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio_file:
-        temp_audio_file.write(audio_data)
-        temp_audio_file_name = temp_audio_file.name
 
-    # You can now pass audio_file to your prediction function
-    prediction_result = prediction(temp_audio_file_name)
+        # Generate a unique filename for the record
+        record_filename = str(uuid.uuid4()) + f'__{user_id}.wav'
 
-    store_record(temp_audio_file_name, prediction_result)
+        # Save the file in the user's folder with the unique filename
+        file_path = os.path.join(user_folder_path, record_filename)
+        file.save(file_path)
 
-    return jsonify({'emotion': prediction_result})
+        return file_path
+    except Exception as e:
+        return str(e)    
+
+# send record and saving it 'form Client'
+@deploy_bp.route('/save-record-client/<int:user_id>',methods=['POST'])
+def save_record_client(user_id):
+    file = request.files['file']
+    user_id = request.view_args.get('user_id') 
+    
+    if not file or user_id is None:
+        return jsonify({'error': 'Empty'})
+
+    savedRecord = storeRecordClient(file, user_id)
+
+    return jsonify({'emotion':'File saved successfully ','file_path':savedRecord}) 
+
+
+
