@@ -100,49 +100,14 @@ def predict(user_id):
 
     return jsonify({
         'message': 'File and prediction result saved successfully.',
-        'record_id': new_record.recordID,
-        'file_path': new_record.record_path,
+        #'record_id': new_record.recordID,
+        #'file_path': new_record.record_path,
         'emotion': new_record.emotion.emotion,
-        'userID':user_id
+        #'userID':user_id
     })
 
 
 
-# save record form Client without the prediction result by using the user ID
-def storeRecordClient(file, user_id):
-    try:
-        # Path to the folder where the user's records will be stored
-        user_folder_path = os.path.join('UsersRecords', str(user_id))
-
-        # Create the user's folder if it doesn't exist
-        if not os.path.exists(user_folder_path):
-            os.makedirs(user_folder_path)
-            print("User folder created")
-
-
-        # Generate a unique filename for the record
-        record_filename = str(uuid.uuid4()) + f'__{user_id}.wav'
-
-        # Save the file in the user's folder with the unique filename
-        file_path = os.path.join(user_folder_path, record_filename)
-        file.save(file_path)
-
-        return file_path
-    except Exception as e:
-        return str(e)    
-
-# send record and saving it 'form Client'
-@deploy_bp.route('/save-record-client/<int:user_id>',methods=['POST'])
-def save_record_client(user_id):
-    file = request.files['file']
-    user_id = request.view_args.get('user_id') 
-    
-    if not file or user_id is None:
-        return jsonify({'error': 'Empty'})
-
-    savedRecord = storeRecordClient(file, user_id)
-
-    return jsonify({'emotion':'File saved successfully ','file_path':savedRecord}) 
 
 
 
