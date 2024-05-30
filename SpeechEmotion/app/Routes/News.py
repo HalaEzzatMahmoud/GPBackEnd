@@ -5,26 +5,25 @@ from flask import Blueprint, request,jsonify,abort
 
 News_bp = Blueprint('News',__name__, url_prefix='/News')
 
-# Define a route for inserting news for Employee
-@News_bp.route('/insert_news', methods=['POST'])
-def insert_news():
+# Define a route for inserting news for Employee , UserID here is the employee
+@News_bp.route('/insert_news/<int:UserID>', methods=['POST'])
+def insert_news(UserID):
     data = request.get_json()  
 
-    # Check if required fields are present
+
     if 'title' not in data or 'body' not in data:
         return jsonify({'error': 'Title and body are required'}), 400
 
     news_item = News(
-        title = data['title'],
-        body = data['body'],
-    )    
-
-    # Add news to the database session
+        title=data['title'],
+        body=data['body'],
+        UserID=UserID,
+    )  
     db.session.add(news_item)
     db.session.commit()
 
-    # Return a response indicating success
-    return jsonify({'message': 'News inserted successfully'})
+
+    return jsonify({'message': 'News inserted successfully', 'newsID': news_item.newsID})
 
 
 # Define a route for retrieving all news for Client
@@ -32,10 +31,8 @@ def insert_news():
 def get_news():
     data = News.query.all()
 
-    # Create a list to store news data
     news_list = []
 
-    # Loop through each news object and extract relevant data
     for n in data:
         news_item = {
             'title': n.title,
@@ -44,5 +41,35 @@ def get_news():
         }
         news_list.append(news_item)
 
-    # Return the list of news as JSON
     return jsonify(news_list)
+
+
+@News_bp.route('/update_news/<int:newsID>', methods=['PUT'])
+def update_news(newsID):
+    data = request.get_json()
+
+    news_item = News.query.get(newsID)
+    
+    if news_item is None:
+        return jsonify({'error': 'News item not found'}), 404
+
+    if 'title' in data:
+        news_item.title = data['title']
+    if 'body' in data:
+        news_item.body = data['body']
+
+    db.session.commit()
+
+    return jsonify({'message': 'News updated successfully'})
+
+
+@News_bp.route('/delete_news/<int:newsID>', methods=['DELETE'])
+def delete_news(newsID):
+    news_item = News.query.get(newsID)
+
+    if news_item is None:
+        return jsonify({'error': 'News item not found'}), 404
+    db.session.delete(news_item)
+    db.session.commit()
+
+    return jsonify({'message': 'News deleted successfully'})

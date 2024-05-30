@@ -85,7 +85,7 @@ def prediction(path):
     return y_pred[0][0]
 
 
-# Prediction endpoint for employee
+# Prediction endpoint for employee , user_id here is the employee
 @deploy_bp.route('/predict-emotion/<int:user_id>',methods=['POST'])
 def predict(user_id):
     print("Predict endpoint accessed") 

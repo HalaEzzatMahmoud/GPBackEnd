@@ -46,6 +46,8 @@ class News(db.Model):
     title = db.Column(db.String(150))
     body = db.Column(db.String(350))
     date1 = db.Column(db.DateTime, default=datetime.utcnow)
+    UserID = db.Column(db.Integer, db.ForeignKey('users.UserID'), nullable=False)
+    user = db.relationship('Users', foreign_keys=[UserID], backref=db.backref('complaints', lazy=True))
 
 class Complaints(db.Model):
     __tablename__ = 'complaints'   
