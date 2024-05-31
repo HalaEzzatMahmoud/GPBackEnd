@@ -59,7 +59,6 @@ class Complaints(db.Model):
     Priority = db.Column(db.String(50), default='Medium')
     Phone = db.Column(db.String(100)) 
     UserID = db.Column(db.Integer, db.ForeignKey('users.UserID'), nullable=False)
-    RoleID = db.Column(db.Integer, db.ForeignKey('users.roleID'), nullable=False)
     user = db.relationship('Users', foreign_keys=[UserID], backref=db.backref('complaints', lazy=True))
 
 

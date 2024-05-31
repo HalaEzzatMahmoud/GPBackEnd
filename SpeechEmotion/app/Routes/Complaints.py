@@ -15,7 +15,6 @@ def add_complaint():
         Description=data['description'],
         Status=data.get('status', 'Open'),
         Priority=data.get('priority', 'Medium'),
-        RoleID=data['role_id'],
         Phone=data['phone']
     )
 
@@ -38,7 +37,6 @@ def get_complaints(user_id):
             'date_created': complaint.DateCreated,
             'status': complaint.Status,
             'priority': complaint.Priority,
-            'role_id': complaint.RoleID,
             'phone': complaint.Phone,
             'first_name': user.FirstName,
             'last_name': user.LastName
