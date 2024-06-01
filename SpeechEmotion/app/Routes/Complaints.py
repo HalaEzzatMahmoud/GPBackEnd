@@ -6,11 +6,11 @@ from flask import Blueprint, request,jsonify,abort
 Complaints_bp = Blueprint('complaints',__name__, url_prefix='/complaints')
 
 
-@Complaints_bp.route('/add', methods=['POST'])
-def add_complaint():
+@Complaints_bp.route('/add_complaint/<int:user_id>', methods=['POST'])
+def add_complaint(user_id):
     data = request.get_json()
     new_complaint = Complaints(
-        UserID=data['user_id'],
+        UserID=user_id,
         Title=data['title'],
         Description=data['description'],
         Status=data.get('status', 'Open'),

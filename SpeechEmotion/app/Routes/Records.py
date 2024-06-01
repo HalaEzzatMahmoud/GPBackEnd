@@ -2,9 +2,12 @@ from app.database import db
 from app.models import Emotions, Records
 from flask import Blueprint, request,jsonify,abort
 from werkzeug.utils import secure_filename
+import os
+import uuid
+
 
 # Create a Blueprint for deployment
-deploy_bp = Blueprint('Record', __name__, url_prefix='/Records')
+Record_bp = Blueprint('Record', __name__, url_prefix='/Records')
 
 
 def storeRecordClient(file, user_id):
@@ -17,9 +20,8 @@ def storeRecordClient(file, user_id):
             os.makedirs(user_folder_path)
             print("User folder created")
 
-
         # Generate a unique filename for the record
-        record_filename = str(uuid.uuid4()) + f'__{user_id}.wav'
+        record_filename = f'{uuid.uuid4()}__{user_id}.wav'
 
         # Save the file in the user's folder with the unique filename
         file_path = os.path.join(user_folder_path, record_filename)
@@ -27,13 +29,12 @@ def storeRecordClient(file, user_id):
 
         return file_path
     except Exception as e:
-        return str(e)    
+        return str(e) 
 
 # send record and saving it 'form Client'
-@deploy_bp.route('/save-record-client/<int:user_id>',methods=['POST'])
+@Record_bp.route('/save-record-client/<int:user_id>',methods=['POST'])
 def save_record_client(user_id):
     file = request.files['file']
-    user_id = request.view_args.get('user_id') 
     
     if not file or user_id is None:
         return jsonify({'error': 'Empty'})
