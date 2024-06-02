@@ -45,6 +45,10 @@ def login():
         return jsonify({'message': 'Invalid username or password.'}), 401
 
 
-    
+@users_bp.route('/all-users', methods=['GET'])
+def get_all_users():
+    users = Users.query.with_entities(Users.UserID, Users.UserName).filter_by(roleID=2).all()
+    users_list = [{'UserID': user.UserID, 'UserName': user.UserName} for user in users]
+    return jsonify(users_list)
 
 
