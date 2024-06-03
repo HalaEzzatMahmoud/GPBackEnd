@@ -21,7 +21,7 @@ def storeRecordClient(file, user_id):
             print("User folder created")
 
         # Generate a unique filename for the record
-        record_filename = f'{uuid.uuid4()}__{user_id}.wav'
+        record_filename = f'UserRecord__{user_id}.wav'
 
         # Save the file in the user's folder with the unique filename
         file_path = os.path.join(user_folder_path, record_filename)
@@ -36,12 +36,12 @@ def storeRecordClient(file, user_id):
 def save_record_client(user_id):
     file = request.files['file']
     
-    if not file or user_id is None:
+    if not file or user_id is None: 
         return jsonify({'error': 'Empty'})
 
     savedRecord = storeRecordClient(file, user_id)
 
-    return jsonify({'emotion':'File saved successfully ','file_path':savedRecord}) 
+    return jsonify({'Message':'File saved successfully ','file_path':savedRecord}) 
 
 
 #Save Predicted file and emotion for employee
