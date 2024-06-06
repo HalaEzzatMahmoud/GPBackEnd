@@ -1,6 +1,6 @@
 from app.database import db 
 from app.models import Emotions, Records
-from flask import Blueprint, request,jsonify,abort
+from flask import Blueprint, request,jsonify,abort,send_from_directory,send_file
 from werkzeug.utils import secure_filename
 import os
 import uuid
@@ -61,3 +61,11 @@ def PredictedRecordSave(file,prediction_result,user_id):
     db.session.commit()
 
     return new_record
+
+@Record_bp.route('/get-audiofile', methods=['GET'])
+def get_audiofile():
+    file_path = request.args.get('file_path')
+    if os.path.exists(file_path):
+        return send_file(file_path, mimetype='audio/wav')
+    else:
+        return "File not found", 404

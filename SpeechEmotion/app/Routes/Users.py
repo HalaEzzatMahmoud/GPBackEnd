@@ -1,6 +1,6 @@
 from app.database import db 
 from app.models import Users
-from flask import Blueprint, request,jsonify,abort
+from flask import Blueprint, request,jsonify,abort,send_from_directory
 from flask_bcrypt import generate_password_hash
 from flask_bcrypt import check_password_hash
 
@@ -50,5 +50,6 @@ def get_all_users():
     users = Users.query.with_entities(Users.UserID, Users.UserName).filter_by(roleID=2).all()
     users_list = [{'UserID': user.UserID, 'UserName': user.UserName} for user in users]
     return jsonify(users_list)
+
 
 
